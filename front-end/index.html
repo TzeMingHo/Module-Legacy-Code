@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -10,12 +10,7 @@
     <header>
       <a href="/"
         ><h1>
-          <img
-            src="/logo.svg"
-            alt="Purple Forest "
-            width="50"
-            height="60"
-          />
+          <img src="/logo.svg" alt="Purple Forest " width="50" height="60" />
           PurpleForest
         </h1></a
       >
@@ -186,11 +181,11 @@
         </dl>
         <div class="profile__actions">
           <button type="button" data-action="follow">Follow</button>
+          <button type="button" data-action="unfollow">Unfollow</button>
         </div>
         <div class="profile__who-to-follow">
           <h4>Who to follow</h4>
-          <ul data-who-to-follow>
-          </ul>
+          <ul data-who-to-follow></ul>
         </div>
       </section>
     </template>
@@ -236,7 +231,9 @@
       <article class="bloom box" data-bloom data-bloom-id="">
         <div class="bloom__header flex">
           <a href="#" class="bloom__username" data-username>Username</a>
-          <a href="#" class="bloom__time"><time class="bloom__time" data-time>2m</time></a>
+          <a href="#" class="bloom__time"
+            ><time class="bloom__time" data-time>2m</time></a
+          >
         </div>
         <div class="bloom__content" data-content></div>
       </article>
