@@ -36,6 +36,17 @@ def add_bloom(*, sender: User, content: str) -> Bloom:
                 dict(hashtag=hashtag, bloom_id=bloom_id),
             )
 
+def add_rebloom(*, user_id: int, bloom_id: int) -> bool:
+    with db_cursor() as cur:
+        try:
+            cur.execute(
+                "INSERT INTO reblooms (user_id, bloom_id) VALUES (%(user_id)s, %(bloom_id)s) ON CONFLICT (user_id, bloom_id) DO NOTHING", dict(user_id=user_id, bloom_id=bloom_id)
+            )
+            return True
+        except Exception as e:
+            print(f"cannot rebloom bloom: {bloom_id}")
+            return False
+
 
 def get_blooms_for_user(
     username: str, *, before: Optional[int] = None, limit: Optional[int] = None
