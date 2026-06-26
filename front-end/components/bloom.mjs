@@ -1,3 +1,5 @@
+import { apiService } from "../index.mjs";
+
 /**
  * Create a bloom component
  * @param {string} template - The ID of the template to clone
@@ -20,6 +22,7 @@ const createBloom = (template, bloom) => {
   const bloomTime = bloomFrag.querySelector("[data-time]");
   const bloomTimeLink = bloomFrag.querySelector("a:has(> [data-time])");
   const bloomContent = bloomFrag.querySelector("[data-content]");
+  const rebloomBtn = bloomFrag.querySelector("[data-action='rebloom']")
 
   bloomArticle.setAttribute("data-bloom-id", bloom.id);
   bloomUsername.setAttribute("href", `/profile/${bloom.sender}`);
@@ -30,6 +33,15 @@ const createBloom = (template, bloom) => {
     ...bloomParser.parseFromString(_formatHashtags(bloom.content), "text/html")
       .body.childNodes
   );
+
+  if (rebloomBtn) {
+    rebloomBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      rebloomBtn.disabled = true;
+      await apiService.postRebloom(bloom.id);
+      rebloomBtn.disabled = false;
+    })
+  }
 
   return bloomFrag;
 };
