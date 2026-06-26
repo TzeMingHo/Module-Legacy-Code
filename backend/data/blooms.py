@@ -90,6 +90,39 @@ def get_blooms_for_user(
             )
     return blooms
 
+def get_reblooms_for_user(username: str) -> List[Bloom]:
+    with db_cursor() as cur:
+        cur.execute(
+            """
+            SELECT 
+                blooms.id, users.username, blooms.content, blooms.send_timestamp 
+            FROM 
+                reblooms 
+                INNER JOIN blooms ON blooms.id = reblooms.bloom_id
+                INNER JOIN users ON users.id = blooms.sender_id
+                INNER JOIN users AS rebloomer ON rebloomer.id = reblooms.user_id
+            WHERE
+                rebloomer.username = %(username)s
+            ORDER BY reblooms.rebloom_timestamp DESC
+            """,
+            dict(username=username)
+        )
+        rows = cur.fetchall()
+
+        reblooms = []
+        for row in rows:
+            bloom_id, send_username, content, timestamp = row
+            reblooms.append(
+                Bloom(
+                    id=bloom_id,
+                    sender=send_username,
+                    content=content,
+                    sent_timestamp=timestamp,
+                )
+            )
+    return reblooms
+
+
 
 def get_bloom(bloom_id: int) -> Optional[Bloom]:
     with db_cursor() as cur:
