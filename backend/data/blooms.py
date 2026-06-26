@@ -90,10 +90,21 @@ def get_blooms_for_user(
             )
     return blooms
 
-def get_reblooms_for_user(username: str) -> List[Bloom]:
+def get_reblooms_for_user(username: str, *, before: Optional[int] = None, limit: Optional[int] = None) -> List[Bloom]:
     with db_cursor() as cur:
+        kwargs = {
+            "username": username,
+        }
+        if before is not None:
+            before_clause = "AND send_timestamp < %(before_limit)s"
+            kwargs["before_limit"] = before
+        else:
+            before_clause = ""
+
+        limit_clause = make_limit_clause(limit, kwargs)
+
         cur.execute(
-            """
+            f"""
             SELECT 
                 blooms.id, users.username, blooms.content, blooms.send_timestamp 
             FROM 
@@ -103,9 +114,11 @@ def get_reblooms_for_user(username: str) -> List[Bloom]:
                 INNER JOIN users AS rebloomer ON rebloomer.id = reblooms.user_id
             WHERE
                 rebloomer.username = %(username)s
+                {before_clause}
             ORDER BY reblooms.rebloom_timestamp DESC
+            {limit_clause}
             """,
-            dict(username=username)
+            kwargs
         )
         rows = cur.fetchall()
 

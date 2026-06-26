@@ -110,12 +110,16 @@ def other_profile(profile_username):
     current_user = get_current_user()
 
     followers = get_inverse_followed_usernames(profile_user)
-    all_blooms = blooms.get_blooms_for_user(profile_username)
-    all_blooms.reverse()
+    own_blooms = blooms.get_blooms_for_user(profile_username)
+    shared_blooms = blooms.get_reblooms_for_user(profile_username)
+    all_blooms = own_blooms + shared_blooms
+    
+    sorted_blooms = list(sorted(all_blooms, key=lambda bloom: bloom.sent_timestamp, reverse=True))
+
     return jsonify(
         {
             "username": profile_username,
-            "recent_blooms": all_blooms[:10],
+            "recent_blooms": sorted_blooms[:10],
             "follows": get_followed_usernames(profile_user),
             "followers": list(followers),
             "is_following": current_user is not None
@@ -177,6 +181,21 @@ def get_bloom(id_str):
         return make_response((f"Bloom not found", 404))
     return jsonify(bloom)
 
+@jwt_required()
+def rebloom(bloom_id):
+    try:
+        id_int = int(bloom_id)
+    except ValueError:
+        return make_response(jsonify({"error": "Invalid bloom id"}), 400)
+
+    current_user = get_current_user()
+
+    success = blooms.add_rebloom(user_id=current_user.id, bloom_id=id_int)
+
+    if success:
+        return make_response(jsonify({"message": "Rebloomed successfully"}), 200)
+    else:
+        return make_response(jsonify({"error": "Failed to rebloom"}), 500)
 
 @jwt_required()
 def home_timeline():
@@ -195,8 +214,11 @@ def home_timeline():
     # Get the current user's own blooms
     own_blooms = blooms.get_blooms_for_user(current_user.username, limit=50)
 
+    # Get the current user's shared blooms
+    shared_blooms = blooms.get_reblooms_for_user(current_user.username, limit=50)
+
     # Combine own blooms with followed blooms
-    all_blooms = followed_blooms + own_blooms
+    all_blooms = followed_blooms + own_blooms + shared_blooms
 
     # Sort by timestamp (newest first)
     sorted_blooms = list(
@@ -205,12 +227,16 @@ def home_timeline():
 
     return jsonify(sorted_blooms)
 
+def user_timeline(profile_username):
+    own_blooms = blooms.get_blooms_for_user(profile_username)
 
-def user_blooms(profile_username):
-    user_blooms = blooms.get_blooms_for_user(profile_username)
-    user_blooms.reverse()
-    return jsonify(user_blooms)
+    shared_blooms = blooms.get_reblooms_for_user(profile_username)
 
+    combined_timeline = own_blooms + shared_blooms
+
+    sorted_timeline = list(sorted(combined_timeline, key=lambda bloom: bloom.sent_timestamp, reverse=True))
+
+    return jsonify(sorted_timeline)
 
 @jwt_required()
 def suggested_follows(limit_str):
