@@ -158,11 +158,13 @@ def send_bloom():
     
     bloom_content = request.json["content"]
 
-    if len(bloom_content) > 280:
+    character_limit = 280
+
+    if len(bloom_content) > character_limit:
         return make_response(
             jsonify({
                 "success": False,
-                "message": "Bloom content cannot exceed 280 characters"
+                "message": f"Bloom content cannot exceed {character_limit} characters"
             }),
             400
         )
