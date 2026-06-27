@@ -194,6 +194,11 @@ dialog {
   grid-area: char-count;
 }
 
+[data-is-rebloom="true"] {
+  border-left: 4px solid #7149c6;
+  background-color: #f9f6ff;
+}
+
 /* LOGIN */
 .login__container {
   margin: 1em 0 auto auto;

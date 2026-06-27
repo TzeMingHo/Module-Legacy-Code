@@ -1,4 +1,6 @@
+import { stat } from "node:fs";
 import { apiService } from "../index.mjs";
+import { state } from "../lib/state.mjs";
 
 /**
  * Create a bloom component
@@ -25,6 +27,11 @@ const createBloom = (template, bloom) => {
   const rebloomBtn = bloomFrag.querySelector("[data-action='rebloom']")
 
   bloomArticle.setAttribute("data-bloom-id", bloom.id);
+
+  if (state.currentUser && bloom.sender !== state.currentUser) {
+    bloomArticle.setAttribute("data-is-rebloom", "true");
+  }
+
   bloomUsername.setAttribute("href", `/profile/${bloom.sender}`);
   bloomUsername.textContent = bloom.sender;
   bloomTime.textContent = _formatTimestamp(bloom.sent_timestamp);
