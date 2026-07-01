@@ -14,6 +14,15 @@ class Bloom:
     content: str
     sent_timestamp: datetime.datetime
 
+@dataclass
+class RebloomView:
+    id: int
+    sender: str
+    content: str
+    sent_timestamp: datetime.datetime
+    rebloomer: str
+    activity_timestamp: datetime.datetime
+
 def add_bloom(*, sender: User, content: str) -> Bloom:
     hashtags = [word[1:] for word in content.split(" ") if word.startswith("#")]
 
@@ -105,7 +114,7 @@ def get_reblooms_for_user(username: str, *, before: Optional[int] = None, limit:
         cur.execute(
             f"""
             SELECT 
-                blooms.id, users.username, blooms.content, blooms.send_timestamp 
+                blooms.id, users.username AS sender, blooms.content, blooms.send_timestamp, rebloomer.username AS rebloomer, reblooms.rebloom_timestamp AS activity_time
             FROM 
                 reblooms 
                 INNER JOIN blooms ON blooms.id = reblooms.bloom_id
@@ -123,13 +132,15 @@ def get_reblooms_for_user(username: str, *, before: Optional[int] = None, limit:
 
         reblooms = []
         for row in rows:
-            bloom_id, send_username, content, timestamp = row
+            bloom_id, send_username, content, timestamp, rebloomer_name, activity_time = row
             reblooms.append(
-                Bloom(
+                RebloomView(
                     id=bloom_id,
                     sender=send_username,
                     content=content,
                     sent_timestamp=timestamp,
+                    rebloomer=rebloomer_name,
+                    activity_timestamp=activity_time
                 )
             )
     return reblooms
