@@ -193,9 +193,9 @@ def rebloom(bloom_id):
     success = blooms.add_rebloom(user_id=current_user.id, bloom_id=id_int)
 
     if success:
-        return make_response(jsonify({"message": "Rebloomed successfully"}), 200)
+        return make_response(jsonify({"success": True, "message": "Rebloom successfully"}), 200)
     else:
-        return make_response(jsonify({"error": "Failed to rebloom"}), 500)
+        return make_response(jsonify({"success": False, "message": "Failed to rebloom"}), 500)
 
 @jwt_required()
 def home_timeline():
