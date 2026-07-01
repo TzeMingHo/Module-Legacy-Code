@@ -26,6 +26,7 @@ const createBloom = (template, bloom) => {
   const rebloomBtn = bloomFrag.querySelector("[data-action='rebloom']");
   const rebloomHeader = bloomFrag.querySelector("[data-rebloom-header]");
   const rebloomBy = bloomFrag.querySelector("[data-rebloom-by]");
+  const rebloomCountLabel = bloomFrag.querySelector("[data-rebloom-count]");
 
   bloomArticle.setAttribute("data-bloom-id", bloom.id);
 
@@ -40,6 +41,15 @@ const createBloom = (template, bloom) => {
       rebloomBy.setAttribute("href", `/profile/${bloom.rebloomer}`);
       rebloomBy.textContent = bloom.rebloomer;
 
+    }
+  }
+
+  if (rebloomCountLabel) {
+    if (bloom.rebloom_count > 0) {
+      rebloomCountLabel.textContent = `(${bloom.rebloom_count})`;
+      rebloomCountLabel.classList.remove("is-hidden");
+    } else {
+      rebloomCountLabel.classList.add("is-hidden");
     }
   }
 

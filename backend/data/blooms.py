@@ -14,6 +14,7 @@ class Bloom:
     content: str
     sent_timestamp: datetime.datetime
     activity_timestamp: datetime.datetime
+    rebloom_count: int
 
 @dataclass
 class RebloomView:
@@ -23,6 +24,7 @@ class RebloomView:
     sent_timestamp: datetime.datetime
     rebloomer: str
     activity_timestamp: datetime.datetime
+    rebloom_count: int
 
 def add_bloom(*, sender: User, content: str) -> Bloom:
     hashtags = [word[1:] for word in content.split(" ") if word.startswith("#")]
@@ -74,7 +76,8 @@ def get_blooms_for_user(
 
         cur.execute(
             f"""SELECT
-              blooms.id, users.username, content, send_timestamp
+              blooms.id, users.username, content, send_timestamp,
+              (SELECT COUNT(*) FROM reblooms WHERE reblooms.bloom_id = blooms.id) AS rebloom_count
             FROM
               blooms INNER JOIN users ON users.id = blooms.sender_id
             WHERE
@@ -88,14 +91,15 @@ def get_blooms_for_user(
         rows = cur.fetchall()
         blooms = []
         for row in rows:
-            bloom_id, sender_username, content, timestamp = row
+            bloom_id, sender_username, content, timestamp, rebloom_count = row
             blooms.append(
                 Bloom(
                     id=bloom_id,
                     sender=sender_username,
                     content=content,
                     sent_timestamp=timestamp,
-                    activity_timestamp=timestamp
+                    activity_timestamp=timestamp,
+                    rebloom_count=rebloom_count
                 )
             )
     return blooms
@@ -116,7 +120,8 @@ def get_reblooms_for_user(username: str, *, before: Optional[int] = None, limit:
         cur.execute(
             f"""
             SELECT 
-                blooms.id, users.username AS sender, blooms.content, blooms.send_timestamp, rebloomer.username AS rebloomer, reblooms.rebloom_timestamp AS activity_time
+                blooms.id, users.username AS sender, blooms.content, blooms.send_timestamp, rebloomer.username AS rebloomer, reblooms.rebloom_timestamp AS activity_time,
+                (SELECT COUNT(*) FROM reblooms WHERE reblooms.bloom_id = blooms.id) AS rebloom_count
             FROM 
                 reblooms 
                 INNER JOIN blooms ON blooms.id = reblooms.bloom_id
@@ -134,7 +139,7 @@ def get_reblooms_for_user(username: str, *, before: Optional[int] = None, limit:
 
         reblooms = []
         for row in rows:
-            bloom_id, send_username, content, timestamp, rebloomer_name, activity_time = row
+            bloom_id, send_username, content, timestamp, rebloomer_name, activity_time, rebloom_count = row
             reblooms.append(
                 RebloomView(
                     id=bloom_id,
@@ -142,7 +147,8 @@ def get_reblooms_for_user(username: str, *, before: Optional[int] = None, limit:
                     content=content,
                     sent_timestamp=timestamp,
                     rebloomer=rebloomer_name,
-                    activity_timestamp=activity_time
+                    activity_timestamp=activity_time,
+                    rebloom_count=rebloom_count
                 )
             )
     return reblooms
@@ -152,18 +158,23 @@ def get_reblooms_for_user(username: str, *, before: Optional[int] = None, limit:
 def get_bloom(bloom_id: int) -> Optional[Bloom]:
     with db_cursor() as cur:
         cur.execute(
-            "SELECT blooms.id, users.username, content, send_timestamp FROM blooms INNER JOIN users ON users.id = blooms.sender_id WHERE blooms.id = %s",
+            """SELECT 
+                blooms.id, users.username, content, send_timestamp,
+                (SELECT COUNT(*) FROM reblooms WHERE reblooms.bloom_id = blooms.id) AS rebloom_count
+                FROM blooms INNER JOIN users ON users.id = blooms.sender_id WHERE blooms.id = %s""",
             (bloom_id,),
         )
         row = cur.fetchone()
         if row is None:
             return None
-        bloom_id, sender_username, content, timestamp = row
+        bloom_id, sender_username, content, timestamp, rebloom_count = row
         return Bloom(
             id=bloom_id,
             sender=sender_username,
             content=content,
             sent_timestamp=timestamp,
+            activity_timestamp=timestamp,
+            rebloom_count=rebloom_count
         )
 
 
@@ -177,7 +188,8 @@ def get_blooms_with_hashtag(
     with db_cursor() as cur:
         cur.execute(
             f"""SELECT
-              blooms.id, users.username, content, send_timestamp
+              blooms.id, users.username, content, send_timestamp,
+              (SELECT COUNT(*) FROM reblooms WHERE reblooms.bloom_id = blooms.id) AS rebloom_count
             FROM
               blooms INNER JOIN hashtags ON blooms.id = hashtags.bloom_id INNER JOIN users ON blooms.sender_id = users.id
             WHERE
@@ -190,13 +202,15 @@ def get_blooms_with_hashtag(
         rows = cur.fetchall()
         blooms = []
         for row in rows:
-            bloom_id, sender_username, content, timestamp = row
+            bloom_id, sender_username, content, timestamp, rebloom_count = row
             blooms.append(
                 Bloom(
                     id=bloom_id,
                     sender=sender_username,
                     content=content,
                     sent_timestamp=timestamp,
+                    activity_timestamp=timestamp,
+                    rebloom_count=rebloom_count
                 )
             )
     return blooms
