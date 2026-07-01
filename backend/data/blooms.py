@@ -13,6 +13,7 @@ class Bloom:
     sender: User
     content: str
     sent_timestamp: datetime.datetime
+    activity_timestamp: datetime.datetime
 
 @dataclass
 class RebloomView:
@@ -94,6 +95,7 @@ def get_blooms_for_user(
                     sender=sender_username,
                     content=content,
                     sent_timestamp=timestamp,
+                    activity_timestamp=timestamp
                 )
             )
     return blooms

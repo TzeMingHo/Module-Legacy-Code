@@ -114,7 +114,7 @@ def other_profile(profile_username):
     shared_blooms = blooms.get_reblooms_for_user(profile_username)
     all_blooms = own_blooms + shared_blooms
     
-    sorted_blooms = list(sorted(all_blooms, key=lambda bloom: bloom.sent_timestamp, reverse=True))
+    sorted_blooms = list(sorted(all_blooms, key=lambda bloom: bloom.activity_timestamp, reverse=True))
 
     return jsonify(
         {
@@ -222,7 +222,7 @@ def home_timeline():
 
     # Sort by timestamp (newest first)
     sorted_blooms = list(
-        sorted(all_blooms, key=lambda bloom: bloom.sent_timestamp, reverse=True)
+        sorted(all_blooms, key=lambda bloom: bloom.activity_timestamp, reverse=True)
     )
 
     return jsonify(sorted_blooms)
@@ -234,7 +234,7 @@ def user_timeline(profile_username):
 
     combined_timeline = own_blooms + shared_blooms
 
-    sorted_timeline = list(sorted(combined_timeline, key=lambda bloom: bloom.sent_timestamp, reverse=True))
+    sorted_timeline = list(sorted(combined_timeline, key=lambda bloom: bloom.activity_timestamp, reverse=True))
 
     return jsonify(sorted_timeline)
 
