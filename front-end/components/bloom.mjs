@@ -1,4 +1,3 @@
-import { stat } from "node:fs";
 import { apiService } from "../index.mjs";
 import { state } from "../lib/state.mjs";
 
@@ -24,12 +23,24 @@ const createBloom = (template, bloom) => {
   const bloomTime = bloomFrag.querySelector("[data-time]");
   const bloomTimeLink = bloomFrag.querySelector("a:has(> [data-time])");
   const bloomContent = bloomFrag.querySelector("[data-content]");
-  const rebloomBtn = bloomFrag.querySelector("[data-action='rebloom']")
+  const rebloomBtn = bloomFrag.querySelector("[data-action='rebloom']");
+  const rebloomHeader = bloomFrag.querySelector("[data-rebloom-header]");
+  const rebloomBy = bloomFrag.querySelector("[data-rebloom-by]");
 
   bloomArticle.setAttribute("data-bloom-id", bloom.id);
 
-  if (state.currentUser && bloom.sender !== state.currentUser) {
+  bloomArticle.removeAttribute("data-is-rebloom");
+  if (rebloomHeader) rebloomHeader.classList.add("is-hidden");
+
+  if (bloom.rebloomer) {
     bloomArticle.setAttribute("data-is-rebloom", "true");
+
+    if (rebloomHeader && rebloomBy) {
+      rebloomHeader.classList.remove("is-hidden");
+      rebloomBy.setAttribute("href", `/profile/${bloom.rebloomer}`);
+      rebloomBy.textContent = bloom.rebloomer;
+
+    }
   }
 
   bloomUsername.setAttribute("href", `/profile/${bloom.sender}`);
@@ -45,7 +56,9 @@ const createBloom = (template, bloom) => {
     rebloomBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       rebloomBtn.disabled = true;
-      await apiService.postRebloom(bloom.id);
+      console.log(bloom)
+      const response = await apiService.postRebloom(bloom.id);
+      console.log("API service responded with", response);
       rebloomBtn.disabled = false;
     })
   }

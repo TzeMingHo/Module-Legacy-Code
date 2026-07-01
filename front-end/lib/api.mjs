@@ -217,11 +217,16 @@ async function postRebloom(bloomId) {
     const data = await _apiRequest(`/blooms/${bloomId}/rebloom`, {
       method: "POST"
     });
+    console.log("Network response received:", data)
     if (data.success) {
-      await Promise.all([
-        getBlooms(),
-        getProfile(state.currentUser)
-      ]);
+      const reFetchingForHome = await getBlooms();
+      console.log("Refetching for home:", reFetchingForHome)
+      if (state.currentUser) {
+        const updateUserProfile = await getProfile(state.currentUser);
+        const updateUserBlooms = await getBlooms(state.currentUser);
+        console.log("update user profile", updateUserProfile);
+        console.log("update user blooms", updateUserBlooms);
+      }
     }
     return data;
   } catch (error) {
@@ -309,6 +314,7 @@ const apiService = {
   getBlooms,
   postBloom,
   getBloomsByHashtag,
+  postRebloom,
 
   // User methods
   getProfile,

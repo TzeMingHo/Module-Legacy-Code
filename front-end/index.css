@@ -194,9 +194,32 @@ dialog {
   grid-area: char-count;
 }
 
-[data-is-rebloom="true"] {
-  border-left: 4px solid #7149c6;
+/* REBLOOM */
+
+.bloom.box[data-is-rebloom="true"] {
+  border-left: 4px solid #7149c6 !important;
   background-color: #f9f6ff;
+  box-shadow: inset 0 0 8px rgba(113, 73, 198, 0.02);
+}
+
+.bloom__rebloom-header {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #657786;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bloom__rebloom-author {
+  font-weight: 700;
+  color: #7149c6;
+  text-decoration: none;
+}
+
+.bloom__rebloom-author:hover {
+  text-decoration: underline;
 }
 
 /* LOGIN */
@@ -269,6 +292,6 @@ dialog {
 }
 
 /* We always want attribute hidden to sync with display:none, no matter what */
-[hidden] {
+.is-hidden, [hidden] {
   display: none !important;
 }
