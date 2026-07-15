@@ -22,7 +22,6 @@ async function hashtagView(hashtag) {
       await apiService.getBloomsByHashtag(hashtag);
     } catch (error) {
       console.log("Failed to fetch hashtag blooms:", error);
-      return;
     }
   }
 
